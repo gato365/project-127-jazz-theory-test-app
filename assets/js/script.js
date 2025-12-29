@@ -1,4 +1,4 @@
-// --- Music Data from JSON ---
+// --- Music Data ---
 const theoryData = {
     "keys": [
         { "name": "C", "scale": ["C", "D", "E", "F", "G", "A", "B"], "1-4-5": ["C", "F", "G"], "2-5-1": ["Dm7", "G7", "Cmaj7"] },
@@ -16,20 +16,25 @@ const theoryData = {
     ]
 };
 
+const notes = ["C", "C#/Db", "D", "D#/Eb", "E", "F", "F#/Gb", "G", "G#/Ab", "A", "A#/Bb", "B"];
+
 // --- App State ---
-let sessionNotes = [];
+let sessionInputs = [];
 let timerInterval;
 let seconds = 0;
 let isRunning = false;
-let correctCount = 0;
 
-// --- Init UI ---
+// --- DOM Elements ---
 const keySelect = document.getElementById('keySelect');
+const typeSelect = document.getElementById('typeSelect');
 const grid = document.getElementById('buttonGrid');
 const display = document.getElementById('displayInput');
 const accuracyDisplay = document.getElementById('accuracyDisplay');
+const timerElem = document.getElementById('timerDisplay');
+const beginBtn = document.getElementById('beginBtn');
+const submitBtn = document.getElementById('submitBtn');
 
-// Populating Keys
+// --- Initialization ---
 theoryData.keys.forEach(k => {
     let opt = document.createElement('option');
     opt.value = k.name;
@@ -37,76 +42,90 @@ theoryData.keys.forEach(k => {
     keySelect.appendChild(opt);
 });
 
-// Create Buttons (including m7 and maj7 for progressions)
-const notes = ["C", "C#/Db", "D", "D#/Eb", "E", "F", "F#/Gb", "G", "G#/Ab", "A", "A#/Bb", "B"];
-const suffixes = ["", "m7", "7", "maj7"]; // To handle 2-5-1 and 1-4-5 variety
+notes.forEach(note => {
+    const btn = document.createElement('button');
+    btn.className = "btn btn-outline-secondary note-btn";
+    btn.innerText = note;
+    btn.onclick = () => handleInput(note);
+    grid.appendChild(btn);
+});
 
-function createButtons() {
-    notes.forEach(note => {
-        const btn = document.createElement('button');
-        btn.className = "btn btn-outline-secondary note-btn";
-        btn.innerText = note;
-        btn.onclick = () => handleInput(note);
-        grid.appendChild(btn);
-    });
-}
-createButtons();
+// --- Core Logic ---
 
-// --- Logic Functions ---
-
-function handleInput(inputNote) {
+function handleInput(note) {
     if (!isRunning) return;
 
     const currentKey = theoryData.keys.find(k => k.name === keySelect.value);
-    const targetType = document.getElementById('typeSelect').value;
-    const targetArray = currentKey[targetType];
+    const targetPattern = currentKey[typeSelect.value];
+    const currentIndex = sessionInputs.length;
     
-    // Check if the input exists in the target scale/progression
-    // We use a simple check; for complex chord names, user can type or we can add chord buttons
-    const isCorrect = targetArray.some(n => n.startsWith(inputNote));
+    // Grading Logic: Check if input matches the specific note at this position in the sequence
+    const expected = targetPattern[currentIndex];
+    // Check if the input note matches the start of the chord (e.g., "D" matches "Dm7")
+    const isCorrect = expected && expected.startsWith(note);
     
-    if (isCorrect) correctCount++;
-    sessionNotes.push({ note: inputNote, correct: isCorrect });
+    sessionInputs.push({ input: note, expected: expected || "Extra", correct: isCorrect });
 
-    // Update Visuals
+    // Update Display UI
     const span = document.createElement('span');
-    span.innerText = inputNote;
+    span.innerText = expected || note; // Show the full chord name if correct
     span.className = isCorrect ? "correct-note" : "wrong-note";
     display.appendChild(span);
 
-    // Update Accuracy %
-    const percent = Math.round((correctCount / sessionNotes.length) * 100);
+    updateAccuracy();
+}
+
+function updateAccuracy() {
+    const correctCount = sessionInputs.filter(i => i.correct).length;
+    const percent = Math.round((correctCount / sessionInputs.length) * 100) || 0;
     accuracyDisplay.innerText = `Accuracy: ${percent}%`;
 }
 
 function startSession() {
-    isRunning = true;
+    // 1. Reset State
+    clearInterval(timerInterval); // Fix: Ensure any old timer is killed
     seconds = 0;
-    correctCount = 0;
-    sessionNotes = [];
-    display.innerHTML = '';
-    accuracyDisplay.innerText = "Accuracy: 0%";
+    sessionInputs = [];
+    isRunning = true;
     
+    // 2. Reset UI
+    timerElem.innerText = "00:00";
+    accuracyDisplay.innerText = "Accuracy: 0%";
+    display.innerHTML = '';
+    
+    // 3. Show/Hide Elements
+    grid.classList.remove('hidden');
+    submitBtn.classList.remove('hidden');
+    beginBtn.innerText = "RESTART SESSION";
+
+    // 4. Start Timer
     timerInterval = setInterval(() => {
         seconds++;
         let m = Math.floor(seconds/60).toString().padStart(2,'0');
         let s = (seconds%60).toString().padStart(2,'0');
-        document.getElementById('timerDisplay').innerText = `${m}:${s}`;
+        timerElem.innerText = `${m}:${s}`;
     }, 1000);
 }
 
-document.getElementById('beginBtn').onclick = startSession;
-
-document.getElementById('saveBtn').onclick = () => {
+submitBtn.onclick = () => {
     clearInterval(timerInterval);
     isRunning = false;
+    
     const finalData = {
+        timestamp: new Date().toISOString(),
         key: keySelect.value,
-        type: document.getElementById('typeSelect').value,
+        testType: typeSelect.value,
         accuracy: accuracyDisplay.innerText,
-        duration: document.getElementById('timerDisplay').innerText,
-        raw_data: sessionNotes
+        time: timerElem.innerText,
+        results: sessionInputs
     };
-    console.log("Final JSON Data:", JSON.stringify(finalData, null, 2));
-    alert("Session data logged to console. Ready for Firebase!");
+
+    console.log("Session Submitted:", JSON.stringify(finalData, null, 2));
+    alert("Session data submitted to console log!");
+    
+    // Optional: Hide buttons again after submit
+    grid.classList.add('hidden');
+    submitBtn.classList.add('hidden');
 };
+
+beginBtn.addEventListener('click', startSession);

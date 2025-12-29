@@ -11,24 +11,25 @@
         #displayInput span { margin: 0 4px; padding: 2px 6px; border-radius: 4px; }
         .correct-note { background-color: #d1fae5; color: #065f46; border: 1px solid #059669; }
         .wrong-note { background-color: #fee2e2; color: #991b1b; border: 1px solid #dc2626; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body class="bg-slate-50 p-4">
 
     <div class="max-w-md mx-auto bg-white rounded-2xl shadow-xl p-6 border border-slate-200">
-        <h2 class="text-center text-xl font-bold mb-4 text-slate-800">Theory Testing & 251</h2>
+        <h2 class="text-center text-xl font-bold mb-4 text-slate-800">Jazz Theory: Scales & 2-5-1s</h2>
 
         <div class="grid grid-cols-2 gap-3 mb-4">
             <div>
-                <label class="text-xs font-semibold text-slate-500 uppercase">Key</label>
+                <label class="text-xs font-semibold text-slate-500 uppercase">Select Key</label>
                 <select id="keySelect" class="form-select"></select>
             </div>
             <div>
-                <label class="text-xs font-semibold text-slate-500 uppercase">Type</label>
+                <label class="text-xs font-semibold text-slate-500 uppercase">Test Type</label>
                 <select id="typeSelect" class="form-select">
-                    <option value="scale">Scale</option>
-                    <option value="2-5-1">2-5-1</option>
-                    <option value="1-4-5">1-4-5</option>
+                    <option value="scale">Major Scale</option>
+                    <option value="2-5-1">2-5-1 Progression</option>
+                    <option value="1-4-5">1-4-5 Progression</option>
                 </select>
             </div>
         </div>
@@ -39,17 +40,16 @@
         </div>
 
         <div class="mb-4">
-            <div id="displayInput" class="border-2 border-slate-200 rounded-xl min-h-[70px] flex flex-wrap items-center p-3 bg-slate-50">
-                <span class="text-slate-400 italic">Press Begin to start...</span>
+            <div id="displayInput" class="border-2 border-slate-200 rounded-xl min-h-[70px] flex flex-wrap items-center p-3 bg-slate-50 text-sm">
+                <span class="text-slate-400 italic">Select options and press Begin...</span>
             </div>
         </div>
 
         <button id="beginBtn" class="btn btn-primary w-full mb-6 py-2 shadow-lg font-bold">BEGIN SESSION</button>
 
-        <div id="buttonGrid" class="grid grid-cols-4 gap-2 justify-items-center mb-6">
-            </div>
+        <div id="buttonGrid" class="grid grid-cols-4 gap-2 justify-items-center mb-6 hidden"></div>
 
-        <button id="saveBtn" class="btn btn-success w-full py-2 font-bold">SAVE SESSION (JSON)</button>
+        <button id="submitBtn" class="btn btn-success w-full py-2 font-bold hidden">SUBMIT SESSION</button>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
