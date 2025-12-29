@@ -59,16 +59,19 @@ function handleInput(note) {
     const targetPattern = currentKey[typeSelect.value];
     const currentIndex = sessionInputs.length;
     
-    // Grading Logic: Check if input matches the specific note at this position in the sequence
+    // 1. Get the expected note from the JSON
     const expected = targetPattern[currentIndex];
-    // Check if the input note matches the start of the chord (e.g., "D" matches "Dm7")
+
+    // 2. Strict Check: Does the button clicked match the expected note exactly?
+    // We check if the expected chord starts with the note (e.g., "Cmaj7" starts with "C")
     const isCorrect = expected && expected.startsWith(note);
     
+    // 3. Store the result
     sessionInputs.push({ input: note, expected: expected || "Extra", correct: isCorrect });
 
-    // Update Display UI
+    // 4. UPDATE UI: Always show the actual note the user clicked
     const span = document.createElement('span');
-    span.innerText = expected || note; // Show the full chord name if correct
+    span.innerText = note; // <-- CHANGED: No longer shows 'expected'
     span.className = isCorrect ? "correct-note" : "wrong-note";
     display.appendChild(span);
 
