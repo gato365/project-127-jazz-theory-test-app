@@ -1,5 +1,21 @@
-assets/js/config.js
-.firebase/
+
+# Dependencies
 node_modules/
-package-lock.json
-package.json
+
+# Firebase local files
+.firebase/
+firebase-debug.log
+ui-debug.log
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+
+# Optional: Python artifacts (since you have musical_notes.py)
+__pycache__/
+*.py[cod]
+
+# Optional: If you ever add environment variables
+.env
+.env.local
+assets/js/config.js
