@@ -1,0 +1,5 @@
+assets/js/config.js
+.firebase/
+node_modules/
+package-lock.json
+package.json
